@@ -1,0 +1,2459 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apolo v1 — Arquitectura del Sistema</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+
+      :root {
+        --bg: #080c14;
+        --surface: #0f1520;
+        --surface-2: #161e2e;
+        --border: #1e2d45;
+        --accent: #2563eb;
+        --accent-glow: rgba(37, 99, 235, 0.18);
+        --gold: #f59e0b;
+        --green: #10b981;
+        --red: #ef4444;
+        --purple: #8b5cf6;
+        --cyan: #06b6d4;
+        --text: #e2e8f0;
+        --text-muted: #64748b;
+        --text-dim: #334155;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+
+      /* NAV */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: rgba(8, 12, 20, 0.85);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 2rem;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .nav-logo {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .nav-logo span {
+        color: var(--accent);
+      }
+      .nav-links {
+        display: flex;
+        gap: 0.25rem;
+      }
+      .nav-links a {
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-decoration: none;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        transition: all 0.2s;
+      }
+      .nav-links a:hover {
+        color: var(--text);
+        background: var(--surface);
+      }
+      .nav-links a.active {
+        color: var(--accent);
+        background: var(--accent-glow);
+      }
+
+      /* SECTIONS */
+      section {
+        min-height: 100vh;
+        padding: 7rem 2rem 4rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      /* HERO */
+      #hero {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 2rem;
+        min-height: 100vh;
+        position: relative;
+      }
+      .hero-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        color: var(--accent);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .hero-eyebrow::before {
+        content: '';
+        display: inline-block;
+        width: 24px;
+        height: 1px;
+        background: var(--accent);
+      }
+      h1 {
+        font-family: 'Inter', sans-serif;
+        font-size: clamp(2.8rem, 6vw, 5rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.03em;
+      }
+      h1 .accent {
+        color: var(--accent);
+      }
+      h1 .dim {
+        color: var(--text-muted);
+      }
+      .hero-sub {
+        font-size: 1.05rem;
+        color: var(--text-muted);
+        max-width: 560px;
+        line-height: 1.7;
+        font-weight: 300;
+      }
+      .hero-meta {
+        display: flex;
+        gap: 2rem;
+      }
+      .hero-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        align-items: center;
+      }
+      .hero-stat .num {
+        font-family: 'Inter', sans-serif;
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text);
+      }
+      .hero-stat .label {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .hero-bg {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 55vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.15;
+        background: radial-gradient(
+          ellipse at 80% 30%,
+          var(--accent) 0%,
+          transparent 60%
+        );
+      }
+
+      /* SECTION HEADERS */
+      .sec-header {
+        margin-bottom: 3rem;
+      }
+      .sec-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        color: var(--accent);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .sec-eyebrow::before {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 1px;
+        background: var(--accent);
+      }
+      h2 {
+        font-family: 'Inter', sans-serif;
+        font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        margin-bottom: 0.75rem;
+      }
+      .sec-desc {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        max-width: 600px;
+      }
+
+      /* CARDS */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .card:hover {
+        border-color: var(--accent);
+        box-shadow:
+          0 0 0 1px var(--accent-glow),
+          0 8px 32px rgba(0, 0, 0, 0.4);
+      }
+
+      /* FLOW SECTION */
+      #flujo {
+        padding-top: 7rem;
+      }
+      .flow-grid {
+        display: grid;
+        gap: 0;
+        position: relative;
+      }
+
+      .flow-step {
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 0;
+        position: relative;
+      }
+      .flow-step::before {
+        content: '';
+        position: absolute;
+        left: 39px;
+        top: 64px;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, var(--border), transparent);
+      }
+      .flow-step:last-child::before {
+        display: none;
+      }
+
+      .step-left {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 1.5rem;
+      }
+      .step-num {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--surface-2);
+        border: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        transition: all 0.2s;
+      }
+      .flow-step:hover .step-num {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-glow);
+      }
+
+      .step-body {
+        padding: 1.25rem 0 2.5rem 1.5rem;
+      }
+      .step-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.62rem;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 0.35rem;
+      }
+      .step-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+      }
+      .step-desc {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        line-height: 1.65;
+        margin-bottom: 1rem;
+      }
+
+      .step-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.75rem;
+      }
+      .pill {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.62rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 4px;
+        border: 1px solid;
+        letter-spacing: 0.04em;
+      }
+      .pill-blue {
+        color: var(--accent);
+        border-color: rgba(37, 99, 235, 0.3);
+        background: var(--accent-glow);
+      }
+      .pill-green {
+        color: var(--green);
+        border-color: rgba(16, 185, 129, 0.3);
+        background: rgba(16, 185, 129, 0.08);
+      }
+      .pill-gold {
+        color: var(--gold);
+        border-color: rgba(245, 158, 11, 0.3);
+        background: rgba(245, 158, 11, 0.08);
+      }
+      .pill-purple {
+        color: var(--purple);
+        border-color: rgba(139, 92, 246, 0.3);
+        background: rgba(139, 92, 246, 0.08);
+      }
+      .pill-cyan {
+        color: var(--cyan);
+        border-color: rgba(6, 182, 212, 0.3);
+        background: rgba(6, 182, 212, 0.08);
+      }
+
+      /* PROGRAMS MATRIX */
+      #programas {
+        padding-top: 5rem;
+      }
+      .matrix {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+      .prog-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .prog-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+      }
+      .prog-card.active {
+        border-color: var(--accent);
+        background: var(--accent-glow);
+      }
+      .prog-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 1rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+      }
+      .prog-types {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        margin-top: 0.75rem;
+      }
+      .type-dot {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 3px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+      }
+      .dot-v {
+        background: rgba(37, 99, 235, 0.2);
+        color: var(--accent);
+      }
+      .dot-h {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--green);
+      }
+      .dot-p {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--gold);
+      }
+
+      .prog-detail {
+        margin-top: 2rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2rem;
+        display: none;
+      }
+      .prog-detail.visible {
+        display: block;
+      }
+      .prog-detail h3 {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+      }
+
+      .fields-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+      }
+      .field-group {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+      }
+      .field-group h4 {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        color: var(--accent);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+      }
+      .field-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .field-list li {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+      }
+      .field-list li code {
+        color: var(--cyan);
+        font-size: 0.68rem;
+      }
+      .field-list li .f-desc {
+        color: var(--text-dim);
+        font-size: 0.65rem;
+      }
+
+      /* COMPONENTS / SEO */
+      #componentes {
+        padding-top: 5rem;
+      }
+      .comp-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+      @media (max-width: 768px) {
+        .comp-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .comp-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.75rem;
+        transition: all 0.25s;
+      }
+      .comp-card:hover {
+        border-color: var(--accent);
+      }
+      .comp-icon {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .comp-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      .comp-desc {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+      }
+      .comp-attrs {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .comp-attrs li {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        padding-left: 1rem;
+        position: relative;
+        line-height: 1.5;
+      }
+      .comp-attrs li::before {
+        content: '→';
+        position: absolute;
+        left: 0;
+        color: var(--accent);
+        font-size: 0.72rem;
+      }
+
+      /* HTML ANATOMY */
+      #estructura {
+        padding-top: 5rem;
+      }
+      .html-viewer {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .html-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        overflow-x: auto;
+      }
+      .html-tab {
+        padding: 0.75rem 1.25rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        border: none;
+        background: none;
+        cursor: pointer;
+        white-space: nowrap;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+      }
+      .html-tab:hover {
+        color: var(--text);
+      }
+      .html-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        background: var(--accent-glow);
+      }
+
+      .html-panel {
+        display: none;
+        padding: 1.5rem;
+      }
+      .html-panel.active {
+        display: block;
+      }
+      pre {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        line-height: 1.75;
+        color: var(--text-muted);
+        overflow-x: auto;
+        white-space: pre;
+      }
+      .hl-tag {
+        color: #60a5fa;
+      }
+      .hl-attr {
+        color: #34d399;
+      }
+      .hl-val {
+        color: #fcd34d;
+      }
+      .hl-placeholder {
+        color: #f87171;
+        font-weight: 500;
+      }
+      .hl-comment {
+        color: var(--text-dim);
+        font-style: italic;
+      }
+      .hl-seo {
+        color: #a78bfa;
+      }
+
+      /* SEO & PERFORMANCE */
+      #seo {
+        padding-top: 5rem;
+      }
+      .seo-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+      @media (max-width: 768px) {
+        .seo-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .perf-score {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .score-ring {
+        width: 72px;
+        height: 72px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        position: relative;
+      }
+      .score-ring::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 3px solid var(--border);
+      }
+      .ring-green {
+        color: var(--green);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      }
+      .ring-green::before {
+        border-color: var(--green);
+      }
+      .ring-blue {
+        color: var(--accent);
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+      }
+      .ring-blue::before {
+        border-color: var(--accent);
+      }
+
+      .score-info h4 {
+        font-family: 'Inter', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+      }
+      .score-info p {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      .seo-checklist {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .seo-checklist li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        padding: 0.75rem 1rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        line-height: 1.5;
+      }
+      .check {
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        margin-top: 0.05rem;
+      }
+      .check.ok {
+        color: var(--green);
+      }
+      .check.info {
+        color: var(--accent);
+      }
+
+      /* NORMALIZATION */
+      #normalizacion {
+        padding-top: 5rem;
+      }
+      .norm-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+      }
+      .norm-table th {
+        text-align: left;
+        padding: 0.6rem 1rem;
+        background: var(--surface-2);
+        color: var(--text-muted);
+        font-size: 0.62rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        border-bottom: 1px solid var(--border);
+      }
+      .norm-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-muted);
+        vertical-align: top;
+      }
+      .norm-table tr:hover td {
+        background: var(--surface);
+      }
+      .from {
+        color: var(--red);
+      }
+      .to {
+        color: var(--green);
+      }
+      .arrow {
+        color: var(--text-dim);
+      }
+
+      /* VALIDATION */
+      #validacion {
+        padding-top: 5rem;
+      }
+      .val-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+      }
+      .val-item {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+      }
+      .val-check {
+        color: var(--green);
+        font-size: 1rem;
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+      }
+      .val-text {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+      .val-text strong {
+        color: var(--text);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 0.2rem;
+        font-size: 0.85rem;
+      }
+
+      /* FOOTER */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 2rem;
+        text-align: center;
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      /* ANIMATIONS */
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .fade-up {
+        animation: fadeUp 0.5s ease forwards;
+      }
+
+      /* BADGE */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.62rem;
+        padding: 0.3rem 0.75rem;
+        border-radius: 100px;
+        border: 1px solid;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .badge-blue {
+        color: var(--accent);
+        border-color: rgba(37, 99, 235, 0.4);
+        background: var(--accent-glow);
+      }
+
+      /* CONNECTOR LINES in flow */
+      .connector {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.75rem 0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        color: var(--text-dim);
+      }
+      .connector::before,
+      .connector::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      /* HIGHLIGHT BOX */
+      .highlight-box {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.08),
+          rgba(139, 92, 246, 0.08)
+        );
+        border: 1px solid rgba(37, 99, 235, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem 1.75rem;
+        margin-top: 1.5rem;
+      }
+      .highlight-box h4 {
+        font-family: 'Inter', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 0.5rem;
+      }
+      .highlight-box p {
+        font-size: 0.83rem;
+        color: var(--text-muted);
+        line-height: 1.65;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero-bg"></div>
+
+    <nav>
+      <div class="nav-logo">Apolo <span>v1</span></div>
+      <div class="nav-links">
+        <a href="#hero" class="active">Inicio</a>
+        <a href="#flujo">Flujo</a>
+        <a href="#programas">Programas</a>
+        <a href="#componentes">Componentes</a>
+        <a href="#estructura">HTML</a>
+        <a href="#seo">SEO</a>
+        <a href="#validacion">Validación</a>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section id="hero">
+      <div class="hero-eyebrow">
+        Sistema de Automatización de Sitios
+      </div>
+      <h1>
+        Apolo <span class="accent">v1</span><br />
+        <span class="dim">Arquitectura</span>
+      </h1>
+      <p class="hero-sub">
+        Motor inteligente que procesa datos de productos y campañas, genera HTML
+        estructurado con SEO optimizado, Performance y conserva la estructura
+        exacta de cada componente por programa bancario.
+      </p>
+      <div class="hero-meta">
+        <div class="hero-stat">
+          <span class="num">8</span>
+          <span class="label">Programas</span>
+        </div>
+        <div class="hero-stat">
+          <span class="num">3</span>
+          <span class="label">Tipos de Producto</span>
+        </div>
+        <div class="hero-stat">
+          <span class="num">11</span>
+          <span class="label">Pasos de Ejecución</span>
+        </div>
+        <div class="hero-stat">
+          <span class="num">80%</span>
+          <span class="label">SEO Estructurado</span>
+        </div>
+      </div>
+      <div class="badge badge-blue">
+        ✦ Estructura de Componentes Preservada en Cada Actualización
+      </div>
+    </section>
+
+    <!-- FLUJO -->
+    <section id="flujo">
+      <div class="sec-header">
+        <div class="sec-eyebrow">Arquitectura del Sistema</div>
+        <h2>Flujo de Ejecución</h2>
+        <p class="sec-desc">
+          11 pasos secuenciales que garantizan la correcta transformación de
+          datos crudos a HTML final sin alterar la estructura original de cada
+          componente.
+        </p>
+      </div>
+
+      <div class="flow-grid">
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">01</div></div>
+          <div class="step-body">
+            <div class="step-tag">Inicialización</div>
+            <div class="step-title">Todo List — Estado de Ejecución</div>
+            <div class="step-desc">
+              El sistema inicializa una lista de tareas con los 7 hitos del
+              proceso. Esto garantiza trazabilidad completa y permite pausar o
+              retomar en cualquier punto del flujo.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-blue">manage_todo_list</span>
+              <span class="pill pill-green">write operation</span>
+              <span class="pill pill-gold">7 hitos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">02</div></div>
+          <div class="step-body">
+            <div class="step-tag">Input — Selección</div>
+            <div class="step-title">Solicitar Tipo de Programa</div>
+            <div class="step-desc">
+              El sistema solicita al usuario el programa activo. Cada programa
+              determina el esquema de datos, los campos requeridos y la
+              plantilla HTML específica a utilizar.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-blue">PCO</span>
+              <span class="pill pill-blue">FICOHSA</span>
+              <span class="pill pill-blue">AUSTRO</span>
+              <span class="pill pill-blue">TYP</span>
+              <span class="pill pill-blue">BANORTE</span>
+              <span class="pill pill-blue">DAVIBANK</span>
+              <span class="pill pill-blue">COOPENAE</span>
+              <span class="pill pill-blue">BAC</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">03</div></div>
+          <div class="step-body">
+            <div class="step-tag">Input — Tipo de Producto</div>
+            <div class="step-title">Solicitar Tipo de Producto</div>
+            <div class="step-desc">
+              Con el programa definido, se selecciona el tipo de producto. La
+              combinación Programa × Producto determina exactamente qué campos
+              se solicitan y cuál plantilla HTML se usa.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-blue">✈ Vuelos</span>
+              <span class="pill pill-green">🏨 Hoteles</span>
+              <span class="pill pill-gold">🎯 Promos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">04</div></div>
+          <div class="step-body">
+            <div class="step-tag">Input — Datos del Producto</div>
+            <div class="step-title">
+              Solicitar y Extraer Datos Estructurados
+            </div>
+            <div class="step-desc">
+              El sistema presenta el formato exacto de entrada para el par
+              Programa×Producto seleccionado. Los datos se ingresan en formato
+              de parámetros numerados
+              <code style="color: var(--cyan); font-size: 0.75rem"
+                >(campo1)</code
+              >
+              y el sistema extrae cada valor automáticamente.
+            </div>
+
+            <div class="highlight-box" style="margin-top: 1rem">
+              <h4>🔑 Clave: Conservación de Estructura</h4>
+              <p>
+                El sistema extrae únicamente los valores de los campos. La
+                estructura HTML del componente permanece intacta — nunca se
+                modifican los contenedores, clases CSS, atributos de
+                accesibilidad ni el orden del markup. Solo se reemplazan los
+                placeholders <code style="color: var(--red)">(campo1)</code> por
+                valores reales.
+              </p>
+            </div>
+
+            <div class="step-pills" style="margin-top: 1rem">
+              <span class="pill pill-purple">enlace</span>
+              <span class="pill pill-purple">title (SEO)</span>
+              <span class="pill pill-purple">alt (SEO)</span>
+              <span class="pill pill-purple">pais</span>
+              <span class="pill pill-purple">precio / puntos</span>
+              <span class="pill pill-cyan">aerolinea / hotel</span>
+              <span class="pill pill-cyan">salida</span>
+              <span class="pill pill-cyan">estrellas / descuento</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">04.5</div></div>
+          <div class="step-body">
+            <div class="step-tag">Transformación</div>
+            <div class="step-title">Normalización de Formatos Numéricos</div>
+            <div class="step-desc">
+              Antes de clasificar, se normalizan todos los valores numéricos.
+              Esto garantiza consistencia visual en el HTML final
+              independientemente del formato de entrada del usuario.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-gold">Puntos: 80.000</span>
+              <span class="pill pill-gold">Precios: $3.091.045</span>
+              <span class="pill pill-gold">USD: $326</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">05</div></div>
+          <div class="step-body">
+            <div class="step-tag">Lógica de Clasificación</div>
+            <div class="step-title">
+              Clasificar Productos: Nacional / Internacional
+            </div>
+            <div class="step-desc">
+              Cada producto se clasifica automáticamente según el campo
+              <code style="color: var(--cyan); font-size: 0.75rem">pais</code>.
+              Los destinos dentro de Colombia son nacionales; todo lo demás es
+              internacional. Esta clasificación define la sección del componente
+              donde aparecerá el item.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-blue"
+                >Internacional → Panamá, Miami, Madrid...</span
+              >
+              <span class="pill pill-green"
+                >Nacional → Bogotá, Cartagena, Medellín...</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">06</div></div>
+          <div class="step-body">
+            <div class="step-tag">Ordenamiento</div>
+            <div class="step-title">Ordenar por Precio Ascendente</div>
+            <div class="step-desc">
+              Dentro de cada categoría (internacional / nacional), los productos
+              se ordenan de menor a mayor precio. Esto garantiza que el slider
+              HTML presente siempre las mejores ofertas primero.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-blue">1° Internacionales ↑ precio</span>
+              <span class="pill pill-green">2° Nacionales ↑ precio</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">07</div></div>
+          <div class="step-body">
+            <div class="step-tag">Validación Intermedia</div>
+            <div class="step-title">Mostrar Datos Ordenados al Usuario</div>
+            <div class="step-desc">
+              Antes de generar el HTML, el sistema muestra los datos
+              clasificados y ordenados para que el usuario los valide. Los
+              campos se numeran secuencialmente (1, 2, 3...) respetando el orden
+              internacional→nacional. Esta es la última oportunidad de corregir
+              valores antes del render HTML final.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-gold">Checkpoint de Calidad</span>
+              <span class="pill pill-gold">Numeración Secuencial</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">08</div></div>
+          <div class="step-body">
+            <div class="step-tag">Selección de Plantilla</div>
+            <div class="step-title">
+              Seleccionar Plantilla HTML por Programa × Producto
+            </div>
+            <div class="step-desc">
+              El sistema selecciona la plantilla exacta correspondiente al par
+              Programa×Producto. Cada plantilla es un componente
+              <code style="color: var(--cyan); font-size: 0.75rem"
+                >div.slider-slide</code
+              >
+              con estructura HTML fija, clases CSS, atributos SEO y microdatos
+              precisos para ese programa.
+            </div>
+
+            <div class="highlight-box" style="margin-top: 1rem">
+              <h4>⚡ Actualización Sin Rompimiento de Estructura</h4>
+              <p>
+                La plantilla HTML es inmutable. Solo los valores entre
+                paréntesis <code style="color: var(--red)">(enlace1)</code> se
+                reemplazan. Las clases, el orden del DOM, los atributos ARIA y
+                los meta-atributos SEO nunca cambian, garantizando
+                compatibilidad total con el sitio destino.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">09</div></div>
+          <div class="step-body">
+            <div class="step-tag">Generación HTML</div>
+            <div class="step-title">Reemplazar Valores en Plantilla</div>
+            <div class="step-desc">
+              Por cada producto en la lista ordenada, el sistema instancia un
+              bloque de componente y reemplaza sistemáticamente todos los
+              placeholders numerados. Los campos
+              <code style="color: var(--purple); font-size: 0.75rem"
+                >title</code
+              >
+              y
+              <code style="color: var(--purple); font-size: 0.75rem">alt</code>
+              se colocan en los atributos HTML correctos garantizando SEO
+              óptimo.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-purple">title → &lt;a title=""&gt;</span>
+              <span class="pill pill-purple">alt → &lt;img alt=""&gt;</span>
+              <span class="pill pill-cyan">href → enlace</span>
+              <span class="pill pill-blue">src → enlaceTipoDeAerolinea</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">10</div></div>
+          <div class="step-body">
+            <div class="step-tag">Validación de Datos</div>
+            <div class="step-title">Confirmar Datos Ordenados</div>
+            <div class="step-desc">
+              Verificación final de los datos antes de la entrega. El sistema
+              confirma que todos los campos fueron reemplazados, que la
+              numeración es correcta y que no quedan placeholders sin resolver.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-green">Sin placeholders vacíos</span>
+              <span class="pill pill-green">Numeración correcta</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-left"><div class="step-num">11</div></div>
+          <div class="step-body">
+            <div class="step-tag">Output Final</div>
+            <div class="step-title">Entregar HTML Final</div>
+            <div class="step-desc">
+              El sistema entrega exclusivamente el código HTML final — bloques
+              <code style="color: var(--cyan); font-size: 0.75rem"
+                >&lt;div class="slider-slide"&gt;</code
+              >
+              con todos los valores reemplazados. Sin texto adicional, sin
+              comentarios, sin markdown. HTML puro listo para pegarse en el CMS
+              del sitio.
+            </div>
+            <div class="step-pills">
+              <span class="pill pill-green">Solo bloques slider-slide</span>
+              <span class="pill pill-green">Sin texto extra</span>
+              <span class="pill pill-gold">Ready para CMS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROGRAMAS -->
+    <section id="programas">
+      <div class="sec-header">
+        <div class="sec-eyebrow">Matriz de Programas</div>
+        <h2>Programas y Sus Campos</h2>
+        <p class="sec-desc">
+          Cada programa bancario tiene un esquema de datos único. Selecciona un
+          programa para ver los campos específicos que requiere por tipo de
+          producto.
+        </p>
+      </div>
+
+      <div class="matrix">
+        <div class="prog-card" onclick="showProg('bac')">
+          <div class="prog-name">BAC</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted)">
+            Mi Viaje, BAC Credomatic
+          </div>
+          <div class="prog-types">
+            <span class="type-dot dot-v">VUELOS</span>
+            <span class="type-dot dot-h">HOTELES</span>
+            <span class="type-dot dot-p">PROMOS</span>
+          </div>
+        </div>
+        <div class="prog-card" onclick="showProg('pco')">
+          <div class="prog-name">PCO</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted)">
+            Puntos Colombia
+          </div>
+          <div class="prog-types">
+            <span class="type-dot dot-v">VUELOS</span>
+            <span class="type-dot dot-h">HOTELES</span>
+          </div>
+        </div>
+        <div class="prog-card" onclick="showProg('davibank')">
+          <div class="prog-name">DAVIBANK</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted)">
+            Davivienda
+          </div>
+          <div class="prog-types">
+            <span class="type-dot dot-v">VUELOS</span>
+            <span class="type-dot dot-h">HOTELES</span>
+          </div>
+        </div>
+        <div class="prog-card" onclick="showProg('ficohsa')">
+          <div class="prog-name">FICOHSA</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted)">
+            Banco Ficohsa
+          </div>
+          <div class="prog-types">
+            <span class="type-dot dot-v">VUELOS</span>
+            <span class="type-dot dot-h">HOTELES</span>
+            <span class="type-dot dot-p">ACTIVIDADES</span>
+          </div>
+        </div>
+        <div class="prog-card" onclick="showProg('austro')">
+          <div class="prog-name">AUSTRO</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted)">
+            Banco del Austro
+          </div>
+          <div class="prog-types">
+            <span class="type-dot dot-v">VUELOS</span>
+            <span class="type-dot dot-h">HOTELES</span>
+          </div>
+        </div>
+        <div class="prog-card" onclick="showProg('typ')">
+          <div class="prog-name">TYP</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted)">
+            Banamex, Travel Rewards TYP
+          </div>
+          <div class="prog-types">
+            <span class="type-dot dot-v">VUELOS</span>
+            <span class="type-dot dot-h">HOTELES</span>
+          </div>
+        </div>
+        <div class="prog-card" onclick="showProg('banorte')">
+          <div class="prog-name">BANORTE</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted)">
+            Banorte México
+          </div>
+          <div class="prog-types">
+            <span class="type-dot dot-v">VUELOS</span>
+            <span class="type-dot dot-h">HOTELES</span>
+          </div>
+        </div>
+        <div class="prog-card" onclick="showProg('coopenae')">
+          <div class="prog-name">COOPENAE</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted)">
+            Banco Coopenae Costa Rica
+          </div>
+          <div class="prog-types">
+            <span class="type-dot dot-v">VUELOS</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="prog-detail" class="prog-detail">
+        <!-- injected by JS -->
+      </div>
+    </section>
+
+    <!-- COMPONENTES HTML -->
+    <section id="componentes">
+      <div class="sec-header">
+        <div class="sec-eyebrow">Estructura de Componentes</div>
+        <h2>Anatomía del Componente</h2>
+        <p class="sec-desc">
+          Cada componente slider-slide es un bloque autónomo con SEO y
+          performance integrados. La actualización reemplaza únicamente los
+          valores, preservando toda la estructura.
+        </p>
+      </div>
+
+      <div class="comp-grid">
+        <div class="comp-card">
+          <div class="comp-icon">🔗</div>
+          <div class="comp-title">Enlace Principal con SEO</div>
+          <div class="comp-desc">
+            El anchor principal del componente lleva el atributo
+            <code style="color: var(--cyan)">title</code> que describe el
+            vuelo/hotel completo. Este título está optimizado para SEO con
+            destino, aerolínea, fecha y precio.
+          </div>
+          <ul class="comp-attrs">
+            <li>title = "Destino - Origen - Aerolínea - Fecha - Precio"</li>
+            <li>Descripción semántica completa para crawlers</li>
+            <li>Nunca se modifica el anchor tag — solo su contenido</li>
+            <li>El href toma el valor de (enlace) sin transformar</li>
+          </ul>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-icon">🖼️</div>
+          <div class="comp-title">Imagen con Alt Text Optimizado</div>
+          <div class="comp-desc">
+            La imagen del destino o aerolínea incluye un
+            <code style="color: var(--cyan)">alt</code> redactado
+            profesionalmente con keywords SEO relevantes: nombre del lugar, tipo
+            de producto, precio y propuesta de valor.
+          </div>
+          <ul class="comp-attrs">
+            <li>alt describe la imagen con keywords de conversión</li>
+            <li>Formato: "Destino: descripción con precio y CTA"</li>
+            <li>loading="lazy" preservado para Core Web Vitals</li>
+            <li>Dimensiones width/height nunca alteradas</li>
+          </ul>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-icon">✈️</div>
+          <div class="comp-title">Imagen de Aerolínea con Fallback</div>
+          <div class="comp-desc">
+            Para vuelos, la imagen de la aerolínea se inyecta mediante
+            <code style="color: var(--cyan)">enlaceTipoDeAerolinea</code>. El
+            src apunta a la URL del logo oficial de la aerolínea. El atributo
+            alt descriptivo siempre se mantiene.
+          </div>
+          <ul class="comp-attrs">
+            <li>src = URL imagen aerolínea (no se modifica)</li>
+            <li>Solo aplicable a programas con campo aerolinea</li>
+            <li>Estructura del img tag permanece intacta</li>
+            <li>Formato de imagen preservado según especificación</li>
+          </ul>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-icon">💰</div>
+          <div class="comp-title">Datos de Precio y Puntos</div>
+          <div class="comp-desc">
+            Los valores numéricos se normalizan antes de inyectarse en el HTML.
+            Puntos con separador de miles por punto, precios con símbolo y
+            formato local. Los spans contenedores nunca cambian.
+          </div>
+          <ul class="comp-attrs">
+            <li>Puntos: formato 1.136.982 (punto = miles)</li>
+            <li>USD: formato $326 (sin decimales)</li>
+            <li>COP: formato $1.136.982 (punto = miles)</li>
+            <li>Spans y clases CSS de precio intactos</li>
+          </ul>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-icon">🏨</div>
+          <div class="comp-title">Metadata de Hotel</div>
+          <div class="comp-desc">
+            Los componentes de hotel incluyen campos adicionales: estrellas
+            (★★★★★), descuento porcentual, nombre del hotel y fechas de compra.
+            Cada campo va al elemento HTML exacto definido en la plantilla.
+          </div>
+          <ul class="comp-attrs">
+            <li>estrellas → elemento de rating con unicode ★</li>
+            <li>descuento → badge de oferta con formato XX%</li>
+            <li>hotel → nombre completo del establecimiento</li>
+            <li>compra → rango de fechas vigentes</li>
+          </ul>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-icon">📍</div>
+          <div class="comp-title">País y Ciudad de Destino</div>
+          <div class="comp-desc">
+            El campo <code style="color: var(--cyan)">pais</code> cumple doble
+            función: es el valor visible en el componente Y es el criterio de
+            clasificación nacional/internacional. Se inyecta sin transformar al
+            elemento correspondiente.
+          </div>
+          <ul class="comp-attrs">
+            <li>Determina clasificación nacional vs. internacional</li>
+            <li>Aparece como etiqueta de destino en el componente</li>
+            <li>También usado en campo pais de vuelos PCO/DAVIBANK</li>
+            <li>Ciudad de salida va en campo separado (salida)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESTRUCTURA HTML -->
+    <section id="estructura">
+      <div class="sec-header">
+        <div class="sec-eyebrow">Código y Templates</div>
+        <h2>Estructura HTML por Tipo</h2>
+        <p class="sec-desc">
+          Visualiza la plantilla HTML de cada combinación Programa × Producto.
+          Los campos en rojo son los placeholders que el sistema reemplaza
+          automáticamente.
+        </p>
+      </div>
+
+      <div class="html-viewer">
+        <div class="html-tabs">
+          <button class="html-tab active" onclick="showTab('vuelo-bac')">
+            Vuelo BAC
+          </button>
+          <button class="html-tab" onclick="showTab('hotel-bac')">
+            Hotel BAC
+          </button>
+          <button class="html-tab" onclick="showTab('vuelo-pco')">
+            Vuelo PCO
+          </button>
+          <button class="html-tab" onclick="showTab('hotel-pco')">
+            Hotel PCO
+          </button>
+          <button class="html-tab" onclick="showTab('vuelo-davibank')">
+            Vuelo DAVIBANK
+          </button>
+          <button class="html-tab" onclick="showTab('actividad-bac')">
+            Actividad BAC
+          </button>
+        </div>
+
+        <div id="tab-vuelo-bac" class="html-panel active">
+          <pre><span class="hl-comment">&lt;!-- COMPONENTE VUELO BAC — Estructura preservada en cada actualización --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"slider-slide"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;a</span>
+    <span class="hl-attr">href</span>=<span class="hl-val">"</span><span class="hl-placeholder">(enlace1)</span><span class="hl-val">"</span>
+    <span class="hl-attr">title</span>=<span class="hl-val">"</span><span class="hl-seo">(title1)</span><span class="hl-val">"</span>             <span class="hl-comment">&lt;!-- SEO: Destino - Origen - Aerolínea - Fecha - Precio --&gt;</span>
+    <span class="hl-attr">target</span>=<span class="hl-val">"_blank"</span>
+  <span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;img</span>
+      <span class="hl-attr">src</span>=<span class="hl-val">"[imagen-destino]"</span>
+      <span class="hl-attr">alt</span>=<span class="hl-val">"</span><span class="hl-seo">(alt1)</span><span class="hl-val">"</span>              <span class="hl-comment">&lt;!-- SEO: Descripción completa con keywords --&gt;</span>
+      <span class="hl-attr">loading</span>=<span class="hl-val">"lazy"</span>             <span class="hl-comment">&lt;!-- PERF: Lazy loading preservado --&gt;</span>
+      <span class="hl-attr">width</span>=<span class="hl-val">"[fijo]"</span> <span class="hl-attr">height</span>=<span class="hl-val">"[fijo]"</span> <span class="hl-comment">&lt;!-- PERF: Dimensiones fijas → sin CLS --&gt;</span>
+    <span class="hl-tag">/&gt;</span>
+    <span class="hl-tag">&lt;img</span>
+      <span class="hl-attr">src</span>=<span class="hl-val">"</span><span class="hl-placeholder">(enlaceTipoDeAerolinea1)</span><span class="hl-val">"</span>   <span class="hl-comment">&lt;!-- Logo aerolínea --&gt;</span>
+      <span class="hl-attr">alt</span>=<span class="hl-val">"</span><span class="hl-placeholder">(aerolinea1)</span><span class="hl-val">"</span>
+      <span class="hl-attr">loading</span>=<span class="hl-val">"lazy"</span>
+    <span class="hl-tag">/&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"destination"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(pais1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"price"</span><span class="hl-tag">&gt;</span>USD $<span class="hl-placeholder">(precio1)</span><span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/a&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+        </div>
+
+        <div id="tab-hotel-bac" class="html-panel">
+          <pre><span class="hl-comment">&lt;!-- COMPONENTE HOTEL BAC — Estructura preservada en cada actualización --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"slider-slide"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;a</span>
+    <span class="hl-attr">href</span>=<span class="hl-val">"</span><span class="hl-placeholder">(enlace1)</span><span class="hl-val">"</span>
+    <span class="hl-attr">title</span>=<span class="hl-val">"</span><span class="hl-seo">(title1)</span><span class="hl-val">"</span>             <span class="hl-comment">&lt;!-- SEO: Hotel - Ciudad - Estrellas - OFF - Fecha - Precio --&gt;</span>
+    <span class="hl-attr">target</span>=<span class="hl-val">"_blank"</span>
+  <span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"stars"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(estrellas1)</span><span class="hl-tag">&lt;/span&gt;</span>    <span class="hl-comment">&lt;!-- ★★★★★ unicode --&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"discount-badge"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(descuento1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;img</span>
+      <span class="hl-attr">src</span>=<span class="hl-val">"[imagen-hotel]"</span>
+      <span class="hl-attr">alt</span>=<span class="hl-val">"</span><span class="hl-seo">(alt1)</span><span class="hl-val">"</span>              <span class="hl-comment">&lt;!-- SEO: Hotel + ciudad + descuento + precio + propuesta --&gt;</span>
+      <span class="hl-attr">loading</span>=<span class="hl-val">"lazy"</span>
+      <span class="hl-attr">width</span>=<span class="hl-val">"[fijo]"</span> <span class="hl-attr">height</span>=<span class="hl-val">"[fijo]"</span>
+    <span class="hl-tag">/&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"destination"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(pais1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"hotel-name"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(hotel1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"dates"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(compra1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"price"</span><span class="hl-tag">&gt;</span>USD $<span class="hl-placeholder">(precio1)</span><span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/a&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+        </div>
+
+        <div id="tab-vuelo-pco" class="html-panel">
+          <pre><span class="hl-comment">&lt;!-- COMPONENTE VUELO PCO — Puntos + Precio + Acumulación/Redención --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"slider-slide"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;a</span> <span class="hl-attr">href</span>=<span class="hl-val">"</span><span class="hl-placeholder">(enlace1)</span><span class="hl-val">"</span> <span class="hl-attr">target</span>=<span class="hl-val">"_blank"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;img</span>
+      <span class="hl-attr">src</span>=<span class="hl-val">"</span><span class="hl-placeholder">(enlaceTipoDeAerolinea1)</span><span class="hl-val">"</span>
+      <span class="hl-attr">alt</span>=<span class="hl-val">"</span><span class="hl-placeholder">(aerolinea1)</span><span class="hl-val">"</span>
+      <span class="hl-attr">loading</span>=<span class="hl-val">"lazy"</span>
+    <span class="hl-tag">/&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"route"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(salida1)</span> → <span class="hl-placeholder">(pais1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"points"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(puntos1)</span> pts<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"price"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(precio1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"accumulation"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(acumulacion1)</span> pts acumulados<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"redemption"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(redencion1)</span> pts redención<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/a&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+        </div>
+
+        <div id="tab-hotel-pco" class="html-panel">
+          <pre><span class="hl-comment">&lt;!-- COMPONENTE HOTEL PCO — Sin aerolínea, con acumulación/redención --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"slider-slide"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;a</span> <span class="hl-attr">href</span>=<span class="hl-val">"</span><span class="hl-placeholder">(enlace1)</span><span class="hl-val">"</span> <span class="hl-attr">target</span>=<span class="hl-val">"_blank"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;img</span>
+      <span class="hl-attr">src</span>=<span class="hl-val">"[imagen-hotel]"</span>
+      <span class="hl-attr">alt</span>=<span class="hl-val">"[hotel destino]"</span>
+      <span class="hl-attr">loading</span>=<span class="hl-val">"lazy"</span>
+    <span class="hl-tag">/&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"destination"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(pais1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"points"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(puntos1)</span> pts<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"price"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(precio1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"accumulation"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(acumulacion1)</span> pts acumulados<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"redemption"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(redencion1)</span> pts redención<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/a&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+        </div>
+
+        <div id="tab-vuelo-davibank" class="html-panel">
+          <pre><span class="hl-comment">&lt;!-- COMPONENTE VUELO DAVIBANK — Puntos + Precio + Valor total --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"slider-slide"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;a</span> <span class="hl-attr">href</span>=<span class="hl-val">"</span><span class="hl-placeholder">(enlace1)</span><span class="hl-val">"</span> <span class="hl-attr">target</span>=<span class="hl-val">"_blank"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;img</span>
+      <span class="hl-attr">src</span>=<span class="hl-val">"</span><span class="hl-placeholder">(enlaceTipoDeAerolinea1)</span><span class="hl-val">"</span>
+      <span class="hl-attr">alt</span>=<span class="hl-val">"</span><span class="hl-placeholder">(aerolinea1)</span><span class="hl-val">"</span>
+      <span class="hl-attr">loading</span>=<span class="hl-val">"lazy"</span>
+    <span class="hl-tag">/&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"route"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(salida1)</span> → <span class="hl-placeholder">(pais1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"points"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(puntos1)</span> pts<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"price"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(precio1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"value"</span><span class="hl-tag">&gt;</span>Valor: <span class="hl-placeholder">(valor1)</span><span class="hl-tag">&lt;/span&gt;</span>  <span class="hl-comment">&lt;!-- Precio total sin puntos --&gt;</span>
+  <span class="hl-tag">&lt;/a&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+        </div>
+
+        <div id="tab-actividad-bac" class="html-panel">
+          <pre><span class="hl-comment">&lt;!-- COMPONENTE ACTIVIDAD BAC — Sin aerolínea, con descuento y precio --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"slider-slide"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;a</span>
+    <span class="hl-attr">href</span>=<span class="hl-val">"</span><span class="hl-placeholder">(enlace1)</span><span class="hl-val">"</span>
+    <span class="hl-attr">title</span>=<span class="hl-val">"</span><span class="hl-seo">(title1)</span><span class="hl-val">"</span>             <span class="hl-comment">&lt;!-- SEO: Actividad - Lugar - OFF - Fecha - Precio --&gt;</span>
+    <span class="hl-attr">target</span>=<span class="hl-val">"_blank"</span>
+  <span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;img</span>
+      <span class="hl-attr">src</span>=<span class="hl-val">"[imagen-actividad]"</span>
+      <span class="hl-attr">alt</span>=<span class="hl-val">"</span><span class="hl-seo">(alt1)</span><span class="hl-val">"</span>              <span class="hl-comment">&lt;!-- SEO: Actividad + lugar + descuento + precio --&gt;</span>
+      <span class="hl-attr">loading</span>=<span class="hl-val">"lazy"</span>
+    <span class="hl-tag">/&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"destination"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(pais1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"discount-badge"</span><span class="hl-tag">&gt;</span><span class="hl-placeholder">(descuento1)</span><span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"price"</span><span class="hl-tag">&gt;</span>USD $<span class="hl-placeholder">(precio1)</span><span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/a&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEO & PERFORMANCE -->
+    <section id="seo">
+      <div class="sec-header">
+        <div class="sec-eyebrow">Calidad Técnica</div>
+        <h2>SEO & Performance</h2>
+        <p class="sec-desc">
+          Cada actualización de contenido generada por Apolo v1 mantiene los
+          estándares de SEO técnico y performance de Core Web Vitals sin
+          intervención manual.
+        </p>
+      </div>
+
+      <div class="seo-grid">
+        <div>
+          <div class="perf-score">
+            <div class="score-ring ring-green">A</div>
+            <div class="score-info">
+              <h4>SEO Score</h4>
+              <p>
+                Title y alt text en cada componente. Keywords de destino,
+                aerolínea y precio integrados en cada campo semántico.
+              </p>
+            </div>
+          </div>
+          <div class="perf-score">
+            <div class="score-ring ring-blue">✓</div>
+            <div class="score-info">
+              <h4>Core Web Vitals</h4>
+              <p>
+                loading="lazy" preservado en todas las imágenes. Dimensiones
+                width/height fijas previenen CLS. Estructura DOM inalterada.
+              </p>
+            </div>
+          </div>
+
+          <ul class="seo-checklist">
+            <li>
+              <span class="check ok">✓</span> Atributo <code>title</code> en
+              anchor incluye destino, aerolínea, fecha y precio
+            </li>
+            <li>
+              <span class="check ok">✓</span> Atributo <code>alt</code> describe
+              imagen con keywords de conversión SEO
+            </li>
+            <li>
+              <span class="check ok">✓</span> Formato del alt: "Tipo en Ciudad:
+              descripción + precio + propuesta de valor"
+            </li>
+            <li>
+              <span class="check ok">✓</span> <code>loading="lazy"</code> nunca
+              se elimina ni modifica
+            </li>
+            <li>
+              <span class="check ok">✓</span> Dimensiones de imagen fijas → sin
+              Layout Shift (CLS = 0)
+            </li>
+            <li>
+              <span class="check ok">✓</span> Estructura DOM idéntica en cada
+              update → sin re-render innecesario
+            </li>
+            <li>
+              <span class="check ok">✓</span> Links con
+              <code>target="_blank"</code> preservado
+            </li>
+            <li>
+              <span class="check ok">✓</span> Numeración secuencial correcta (1,
+              2, 3...) en todos los campos
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom: 1.5rem">
+            <div
+              style="
+                font-family: 'Inter', sans-serif;
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+              "
+            >
+              Fórmula del Alt Text SEO
+            </div>
+            <pre
+              style="
+                background: var(--surface-2);
+                padding: 1rem;
+                border-radius: 8px;
+                font-size: 0.68rem;
+                line-height: 1.8;
+                border: 1px solid var(--border);
+              "
+            >
+<span class="hl-seo">[Tipo] en [Ciudad]:</span>
+<span style="color:var(--text-muted);">[descripción del producto] mostrando
+[imagen descriptiva], con [oferta]
+y tarifas desde [precio]. Ideal para
+[propósito de viaje] en [destino].</span>
+        </pre>
+            <div
+              style="
+                margin-top: 1rem;
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                line-height: 1.6;
+              "
+            >
+              Este formato garantiza que el alt text sea útil para lectores de
+              pantalla (accesibilidad), descriptivo para bots de búsqueda (SEO)
+              y persuasivo para usuarios (conversión).
+            </div>
+          </div>
+
+          <div class="card">
+            <div
+              style="
+                font-family: 'Inter', sans-serif;
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+              "
+            >
+              Campos SEO por Programa
+            </div>
+            <table
+              style="width: 100%; font-size: 0.72rem; border-collapse: collapse"
+            >
+              <thead>
+                <tr>
+                  <th
+                    style="
+                      text-align: left;
+                      padding: 0.4rem;
+                      color: var(--text-muted);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    Programa
+                  </th>
+                  <th
+                    style="
+                      text-align: center;
+                      padding: 0.4rem;
+                      color: var(--text-muted);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    title
+                  </th>
+                  <th
+                    style="
+                      text-align: center;
+                      padding: 0.4rem;
+                      color: var(--text-muted);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    alt
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td
+                    style="
+                      padding: 0.4rem;
+                      color: var(--text-muted);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    BAC Vuelos
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--green);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    ✓
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--green);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    ✓
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    style="
+                      padding: 0.4rem;
+                      color: var(--text-muted);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    BAC Hoteles
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--green);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    ✓
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--green);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    ✓
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    style="
+                      padding: 0.4rem;
+                      color: var(--text-muted);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    BAC Actividades
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--green);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    ✓
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--green);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    ✓
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    style="
+                      padding: 0.4rem;
+                      color: var(--text-muted);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    PCO / DAVIBANK
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--text-dim);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    —
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--accent);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    alt en img
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    style="
+                      padding: 0.4rem;
+                      color: var(--text-muted);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    FICOHSA / AUSTRO
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--text-dim);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    —
+                  </td>
+                  <td
+                    style="
+                      text-align: center;
+                      color: var(--accent);
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    alt en img
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.4rem; color: var(--text-muted)">
+                    TYP / BANORTE
+                  </td>
+                  <td style="text-align: center; color: var(--text-dim)">—</td>
+                  <td style="text-align: center; color: var(--accent)">
+                    alt en img
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NORMALIZACION -->
+    <section id="normalizacion">
+      <div class="sec-header">
+        <div class="sec-eyebrow">Transformación de Datos</div>
+        <h2>Normalización de Formatos</h2>
+        <p class="sec-desc">
+          El sistema normaliza automáticamente todos los valores numéricos antes
+          de inyectarlos al HTML, garantizando consistencia visual sin importar
+          el formato de entrada.
+        </p>
+      </div>
+
+      <div class="card">
+        <table class="norm-table">
+          <thead>
+            <tr>
+              <th>Tipo de Valor</th>
+              <th>Formato Entrada</th>
+              <th></th>
+              <th>Formato Salida</th>
+              <th>Regla</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color: var(--text)">Puntos</td>
+              <td>
+                <span class="from">80,000</span> o
+                <span class="from">80.000</span>
+              </td>
+              <td class="arrow">→</td>
+              <td><span class="to">80.000</span></td>
+              <td style="color: var(--text-dim)">
+                Punto como separador de miles
+              </td>
+            </tr>
+            <tr>
+              <td style="color: var(--text)">Precios COP</td>
+              <td>
+                <span class="from">$3,091,045</span> o
+                <span class="from">$3.091.045</span>
+              </td>
+              <td class="arrow">→</td>
+              <td><span class="to">$3.091.045</span></td>
+              <td style="color: var(--text-dim)">
+                Punto = miles, siempre con $
+              </td>
+            </tr>
+            <tr>
+              <td style="color: var(--text)">Acumulación / Redención</td>
+              <td>
+                <span class="from">2,975</span> o
+                <span class="from">2.975</span>
+              </td>
+              <td class="arrow">→</td>
+              <td><span class="to">2.975</span></td>
+              <td style="color: var(--text-dim)">
+                Punto como separador de miles
+              </td>
+            </tr>
+            <tr>
+              <td style="color: var(--text)">USD</td>
+              <td>
+                <span class="from">326.00</span> o
+                <span class="from">326,00</span>
+              </td>
+              <td class="arrow">→</td>
+              <td><span class="to">$326</span></td>
+              <td style="color: var(--text-dim)">
+                Sin decimales, con símbolo $
+              </td>
+            </tr>
+            <tr>
+              <td style="color: var(--text)">Estrellas</td>
+              <td>
+                <span class="from">4</span> o <span class="from">★★★★</span>
+              </td>
+              <td class="arrow">→</td>
+              <td><span class="to">★★★★</span></td>
+              <td style="color: var(--text-dim)">Unicode ★ repetido N veces</td>
+            </tr>
+            <tr>
+              <td style="color: var(--text)">Descuento</td>
+              <td>
+                <span class="from">57</span> o <span class="from">57%</span>
+              </td>
+              <td class="arrow">→</td>
+              <td><span class="to">57%</span></td>
+              <td style="color: var(--text-dim)">Siempre con símbolo %</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VALIDACION -->
+    <section id="validacion">
+      <div class="sec-header">
+        <div class="sec-eyebrow">Garantías del Sistema</div>
+        <h2>Checklist de Validación</h2>
+        <p class="sec-desc">
+          Cada ejecución verifica estos puntos antes de entregar el HTML final.
+          El sistema no avanza al siguiente paso si alguna validación falla.
+        </p>
+      </div>
+
+      <div class="val-grid">
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>Tipo de Producto Correcto</strong>
+            Verifica que Vuelos, Hoteles o Promos fue seleccionado y que se usó
+            la plantilla HTML correspondiente.
+          </div>
+        </div>
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>Programa Identificado</strong>
+            Confirma que PCO, FICOHSA, AUSTRO, TYP, BANORTE, DAVIBANK, COOPENAE
+            o BAC fue seleccionado correctamente.
+          </div>
+        </div>
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>Clasificación Nacional / Internacional</strong>
+            Cada producto fue correctamente asignado a su categoría según el
+            campo pais del destino.
+          </div>
+        </div>
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>Orden Ascendente por Precio</strong>
+            Internacionales primero, nacionales después. Dentro de cada grupo,
+            precio de menor a mayor.
+          </div>
+        </div>
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>Estructura HTML Exacta</strong>
+            Las clases CSS, atributos, jerarquía DOM y orden de elementos son
+            idénticos a la plantilla original.
+          </div>
+        </div>
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>Sin Placeholders Vacíos</strong>
+            Todos los campos entre paréntesis (enlace1), (title1)... fueron
+            reemplazados por valores reales.
+          </div>
+        </div>
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>Numeración Secuencial</strong>
+            Los sufijos numéricos (1, 2, 3...) son correlativos y respetan el
+            orden internacional→nacional→precio.
+          </div>
+        </div>
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>Formato de Salida Limpio</strong>
+            El output es solo bloques HTML — sin texto explicativo, sin
+            comentarios, sin markdown adicional.
+          </div>
+        </div>
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>Formatos Numéricos Normalizados</strong>
+            Puntos, precios y descuentos siguen el formato estándar definido en
+            el Paso 4.5 antes de ser inyectados.
+          </div>
+        </div>
+        <div class="val-item">
+          <span class="val-check">✓</span>
+          <div class="val-text">
+            <strong>SEO en Campos Correctos</strong>
+            title y alt text están en los atributos HTML exactos — nunca como
+            contenido de texto visible o en otros atributos.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Apolo v1 — Sistema de Automatización · Arquitectura y Flujo de Ejecución
+    </footer>
+
+    <script>
+      // NAV ACTIVE STATE
+      const sections = document.querySelectorAll('section');
+      const navLinks = document.querySelectorAll('.nav-links a');
+      window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach((s) => {
+          if (window.scrollY >= s.offsetTop - 80) current = s.id;
+        });
+        navLinks.forEach((a) => {
+          a.classList.toggle(
+            'active',
+            a.getAttribute('href') === '#' + current
+          );
+        });
+      });
+
+      // TAB SYSTEM
+      function showTab(id) {
+        document
+          .querySelectorAll('.html-panel')
+          .forEach((p) => p.classList.remove('active'));
+        document
+          .querySelectorAll('.html-tab')
+          .forEach((t) => t.classList.remove('active'));
+        document.getElementById('tab-' + id).classList.add('active');
+        event.target.classList.add('active');
+      }
+
+      // PROGRAM DETAILS
+      const progData = {
+        bac: {
+          name: 'BAC — Banco de América Central',
+          products: {
+            Vuelos: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del vuelo' },
+                {
+                  code: '(title)',
+                  desc: 'SEO: Destino - Origen - Aerolínea - Fecha - Precio'
+                },
+                {
+                  code: '(enlaceTipoDeAerolinea)',
+                  desc: 'URL imagen del logo de aerolínea'
+                },
+                { code: '(aerolinea)', desc: 'Nombre de la aerolínea' },
+                {
+                  code: '(alt)',
+                  desc: 'SEO: Descripción completa con keywords'
+                },
+                { code: '(pais)', desc: 'País / ciudad destino' },
+                { code: '(precio)', desc: 'Precio en USD (sin símbolo)' }
+              ]
+            },
+            Hoteles: {
+              fields: [
+                {
+                  code: '(estrellas)',
+                  desc: 'Calificación en estrellas ★★★★★'
+                },
+                {
+                  code: '(descuento)',
+                  desc: 'Porcentaje de descuento (ej: 35%)'
+                },
+                { code: '(enlace)', desc: 'URL del hotel' },
+                {
+                  code: '(title)',
+                  desc: 'SEO: Hotel - Ciudad - Estrellas - OFF - Fecha - Precio'
+                },
+                {
+                  code: '(alt)',
+                  desc: 'SEO: Descripción completa con keywords'
+                },
+                { code: '(pais)', desc: 'País / ciudad destino' },
+                { code: '(hotel)', desc: 'Nombre completo del hotel' },
+                {
+                  code: '(compra)',
+                  desc: 'Vigencia de compra (ej: Mayo 2026 - Jul 2026)'
+                },
+                { code: '(precio)', desc: 'Precio por habitación en USD' }
+              ]
+            },
+            Actividad: {
+              fields: [
+                { code: '(enlace)', desc: 'URL de la actividad' },
+                {
+                  code: '(title)',
+                  desc: 'SEO: Lugar - Actividad - OFF - Fecha - Precio'
+                },
+                {
+                  code: '(alt)',
+                  desc: 'SEO: Descripción completa con keywords'
+                },
+                { code: '(pais)', desc: 'País / ciudad' },
+                { code: '(descuento)', desc: 'Porcentaje de descuento' },
+                { code: '(precio)', desc: 'Precio por persona en USD' }
+              ]
+            },
+            'Disney / Auto': {
+              fields: [
+                { code: '(enlace)', desc: 'URL del producto' },
+                {
+                  code: '(title)',
+                  desc: 'SEO: Título completo con fecha y precio'
+                },
+                {
+                  code: '(alt)',
+                  desc: 'SEO: Descripción con atractivos y precio'
+                },
+                {
+                  code: '(precio)',
+                  desc: 'Precio (por día de parque o diario)'
+                }
+              ]
+            }
+          }
+        },
+        pco: {
+          name: 'PCO — Puntos Colombia',
+          products: {
+            Vuelos: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del vuelo' },
+                {
+                  code: '(enlaceTipoDeAerolinea)',
+                  desc: 'URL imagen aerolínea'
+                },
+                { code: '(aerolinea)', desc: 'Nombre de la aerolínea' },
+                { code: '(pais)', desc: 'País destino' },
+                { code: '(salida)', desc: 'Ciudad de salida' },
+                {
+                  code: '(puntos)',
+                  desc: 'Puntos requeridos (formato: 5.000)'
+                },
+                {
+                  code: '(precio)',
+                  desc: 'Precio en pesos (formato: $1.136.982)'
+                },
+                { code: '(acumulacion)', desc: 'Puntos a acumular' },
+                { code: '(redencion)', desc: 'Puntos para redención' }
+              ]
+            },
+            Hoteles: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del hotel' },
+                { code: '(pais)', desc: 'País / ciudad destino' },
+                { code: '(puntos)', desc: 'Puntos requeridos' },
+                { code: '(precio)', desc: 'Precio en pesos' },
+                { code: '(acumulacion)', desc: 'Puntos a acumular' },
+                { code: '(redencion)', desc: 'Puntos para redención' }
+              ]
+            }
+          }
+        },
+        davibank: {
+          name: 'DAVIBANK — Davivienda',
+          products: {
+            Vuelos: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del vuelo' },
+                {
+                  code: '(enlaceTipoDeAerolinea)',
+                  desc: 'URL imagen aerolínea'
+                },
+                { code: '(aerolinea)', desc: 'Nombre de la aerolínea' },
+                { code: '(pais)', desc: 'País destino' },
+                { code: '(salida)', desc: 'Ciudad de salida' },
+                { code: '(puntos)', desc: 'Puntos requeridos' },
+                { code: '(precio)', desc: 'Precio con puntos' },
+                { code: '(valor)', desc: 'Precio total sin puntos' }
+              ]
+            },
+            Hoteles: {
+              fields: [
+                { code: '(descuento)', desc: 'Porcentaje de descuento' },
+                { code: '(enlace)', desc: 'URL del hotel' },
+                { code: '(pais)', desc: 'País / ciudad destino' },
+                { code: '(puntos)', desc: 'Puntos requeridos' },
+                { code: '(precio)', desc: 'Precio con puntos' },
+                { code: '(valor)', desc: 'Precio total sin puntos' }
+              ]
+            }
+          }
+        },
+        ficohsa: {
+          name: 'FICOHSA — Banco Ficohsa',
+          products: {
+            Vuelos: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del vuelo' },
+                {
+                  code: '(enlaceTipoDeAerolinea)',
+                  desc: 'URL imagen aerolínea'
+                },
+                { code: '(aerolinea)', desc: 'Nombre de la aerolínea' },
+                { code: '(pais)', desc: 'País destino' },
+                { code: '(salida)', desc: 'Ciudad de salida' },
+                { code: '(puntos)', desc: 'Puntos (formato: 1.136.982)' }
+              ]
+            },
+            Hoteles: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del hotel' },
+                { code: '(pais)', desc: 'País / ciudad destino' },
+                { code: '(hotel)', desc: 'Nombre del hotel' },
+                { code: '(puntos)', desc: 'Puntos' },
+                { code: '(descuento)', desc: 'Descuento' },
+                { code: '(estrellas)', desc: 'Categoría en estrellas' }
+              ]
+            },
+            Actividades: {
+              fields: [
+                { code: '(enlace)', desc: 'URL de la actividad' },
+                { code: '(pais)', desc: 'País / ciudad' },
+                { code: '(actividad)', desc: 'Nombre de la actividad' },
+                { code: '(puntos)', desc: 'Puntos' },
+                { code: '(descuento)', desc: 'Descuento' }
+              ]
+            }
+          }
+        },
+        austro: {
+          name: 'AUSTRO — Banco del Austro',
+          products: {
+            Vuelos: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del vuelo' },
+                {
+                  code: '(enlaceTipoDeAerolinea)',
+                  desc: 'URL imagen aerolínea'
+                },
+                { code: '(aerolinea)', desc: 'Nombre de la aerolínea' },
+                { code: '(pais)', desc: 'País destino' },
+                { code: '(salida)', desc: 'Ciudad de salida' },
+                { code: '(puntos)', desc: 'Puntos (formato: 1.136.982)' }
+              ]
+            },
+            Hoteles: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del hotel' },
+                { code: '(pais)', desc: 'País / ciudad destino' },
+                { code: '(hotel)', desc: 'Nombre del hotel' },
+                { code: '(puntos)', desc: 'Puntos' },
+                { code: '(descuento)', desc: 'Descuento' },
+                { code: '(estrellas)', desc: 'Categoría en estrellas' }
+              ]
+            }
+          }
+        },
+        typ: {
+          name: 'TYP — Travel & Points',
+          products: {
+            Vuelos: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del vuelo' },
+                {
+                  code: '(enlaceTipoDeAerolinea)',
+                  desc: 'URL imagen aerolínea'
+                },
+                { code: '(aerolinea)', desc: 'Nombre de la aerolínea' },
+                { code: '(pais)', desc: 'País destino' },
+                { code: '(puntos)', desc: 'Puntos (formato: 5,000)' }
+              ]
+            },
+            Hoteles: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del hotel' },
+                { code: '(pais)', desc: 'País destino' },
+                { code: '(hotel)', desc: 'Nombre del hotel' },
+                { code: '(descuento)', desc: 'Descuento' },
+                { code: '(puntos)', desc: 'Puntos (formato: 87,000)' }
+              ]
+            }
+          }
+        },
+        banorte: {
+          name: 'BANORTE — Banorte México',
+          products: {
+            Vuelos: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del vuelo' },
+                { code: '(pais)', desc: 'País destino' },
+                { code: '(puntos)', desc: 'Puntos (formato: 5,000)' }
+              ]
+            },
+            Hoteles: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del hotel' },
+                { code: '(pais)', desc: 'País destino' },
+                { code: '(hotel)', desc: 'Nombre del hotel' },
+                { code: '(descuento)', desc: 'Descuento' },
+                { code: '(puntos)', desc: 'Puntos (formato: 87,000)' }
+              ]
+            }
+          }
+        },
+        coopenae: {
+          name: 'COOPENAE — Cooperativa NAE',
+          products: {
+            Vuelos: {
+              fields: [
+                { code: '(enlace)', desc: 'URL del vuelo' },
+                {
+                  code: '(enlaceTipoDeAerolinea)',
+                  desc: 'URL imagen aerolínea'
+                },
+                { code: '(aerolinea)', desc: 'Nombre de la aerolínea' },
+                { code: '(pais)', desc: 'País destino' },
+                { code: '(salida)', desc: 'Ciudad de salida' },
+                { code: '(precio)', desc: 'Precio en formato $1.136.982' }
+              ]
+            }
+          }
+        }
+      };
+
+      function showProg(id) {
+        document
+          .querySelectorAll('.prog-card')
+          .forEach((c) => c.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        const data = progData[id];
+        const detail = document.getElementById('prog-detail');
+        detail.classList.add('visible');
+
+        let html = `<h3>${data.name}</h3><div class="fields-grid">`;
+        for (const [product, info] of Object.entries(data.products)) {
+          html += `<div class="field-group"><h4>✈ ${product}</h4><ul class="field-list">`;
+          info.fields.forEach((f) => {
+            html += `<li><code>${f.code}</code><span class="f-desc">— ${f.desc}</span></li>`;
+          });
+          html += `</ul></div>`;
+        }
+        html += `</div>`;
+        detail.innerHTML = html;
+        detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    </script>
+  </body>
+</html>

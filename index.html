@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generador HTML Turístico</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="#534AB7"/>
+          <path d="M8 14h12M14 8v12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>HTML<strong>Gen</strong></span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-label">Programa</p>
+        <div id="prog-list">
+          <button class="nav-item" data-prog="PCO">PCO</button>
+          <button class="nav-item" data-prog="FICOHSA">FICOHSA</button>
+          <button class="nav-item" data-prog="AUSTRO">AUSTRO</button>
+          <button class="nav-item" data-prog="TYP">TYP</button>
+          <button class="nav-item" data-prog="BANORTE">BANORTE</button>
+          <button class="nav-item" data-prog="DAVIBANK">DAVIBANK</button>
+          <button class="nav-item" data-prog="COOPENAE">COOPENAE</button>
+        </div>
+
+        <p class="nav-label" style="margin-top:1.5rem">Producto</p>
+        <div id="tipo-list">
+          <p class="nav-empty">Elige un programa</p>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div id="status-dot" class="status-dot"></div>
+        <span id="status-text">Sin configurar</span>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- Top bar -->
+      <header class="topbar">
+        <div>
+          <h1 class="topbar-title" id="topbar-title">Generador de HTML turístico</h1>
+          <p class="topbar-sub">Carga tu Excel y genera el código de las cards listo para usar</p>
+        </div>
+        <div id="stats-chips" class="stats-chips" style="display:none">
+          <div class="chip"><span id="s-total">0</span> items</div>
+          <div class="chip chip-int"><span id="s-int">0</span> internacionales</div>
+          <div class="chip chip-nal"><span id="s-nal">0</span> nacionales</div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="content">
+
+        <!-- Step 1: Upload -->
+        <section class="section" id="section-upload">
+          <div class="section-header">
+            <div class="step-badge">1</div>
+            <h2 class="section-title">Carga el archivo Excel</h2>
+          </div>
+
+          <div class="cols-hint" id="cols-hint" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#534AB7" stroke-width="1.2"/><path d="M7 6v4M7 4.5v.5" stroke="#534AB7" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <div>
+              <p class="cols-hint-title">Columnas esperadas en el Excel</p>
+              <code id="cols-text"></code>
+            </div>
+          </div>
+
+          <div class="error-msg" id="error-msg" style="display:none"></div>
+
+          <div class="upload-zone" id="drop-zone">
+            <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
+            <div class="upload-icon">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="10" fill="#EEEDFE"/>
+                <path d="M20 26V18M20 18L16 22M20 18L24 22" stroke="#534AB7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M13 30h14" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M12 26v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="#AFA9EC" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p class="upload-title">Arrastra tu archivo aquí</p>
+            <p class="upload-sub">o <span class="upload-link">selecciona desde tu computador</span> — .xlsx, .xls, .csv</p>
+          </div>
+        </section>
+
+        <!-- Step 2: Preview -->
+        <section class="section" id="section-preview" style="display:none">
+          <div class="section-header">
+            <div class="step-badge">2</div>
+            <h2 class="section-title">Previsualización de datos</h2>
+            <button class="btn-ghost" id="btn-reload" onclick="resetUpload()">Cambiar archivo</button>
+          </div>
+          <div class="table-wrap">
+            <table class="preview-table" id="preview-table"></table>
+          </div>
+        </section>
+
+        <!-- Step 3: Generate -->
+        <section class="section" id="section-generate" style="display:none">
+          <div class="section-header">
+            <div class="step-badge">3</div>
+            <h2 class="section-title">Generar HTML</h2>
+          </div>
+          <button class="btn-primary" id="gen-btn" onclick="generateHTML()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Generar cards HTML
+          </button>
+        </section>
+
+        <!-- Output -->
+        <section class="section" id="section-output" style="display:none">
+          <div class="section-header">
+            <div class="step-badge step-done">✓</div>
+            <h2 class="section-title" id="output-label">HTML generado</h2>
+            <div class="out-actions">
+              <button class="btn-ghost" id="dl-btn" onclick="downloadHTML()">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v7M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Descargar .html
+              </button>
+              <button class="btn-primary btn-sm" id="copy-btn" onclick="copyOut()">Copiar</button>
+            </div>
+          </div>
+          <div class="output-box" id="output-box"></div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

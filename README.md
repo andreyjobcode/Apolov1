@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Apolo v1 - Actualizador de Sitios Ultrago
 
 ## Descripción
@@ -350,4 +349,3 @@ Apolo-v1.md
 ## Versión
 
 **Apolo v1**
->>>>>>> ab00cbad105205fd8db20498c87928ba1b6312ef
